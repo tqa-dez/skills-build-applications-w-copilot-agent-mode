@@ -28,19 +28,38 @@ OctoFit Tracker is a three-tier application for a school fitness program. The st
 
 ## Implementation decisions
 
-Record your plan here before editing code.
+The implementation will preserve the existing three-tier boundaries and use the
+contract tests as the acceptance criteria.
 
-- Presentation tier decision:
-- Logic tier decision:
-- Data tier decision:
-- Activity tracking approach:
-- Team management approach:
-- Leaderboard approach:
-- Workout suggestions approach:
+- Presentation tier decision: Keep route-level capability components focused on
+	rendering and user states. Use `src/api/client.ts` for relative API requests,
+	and show accessible loading, empty, success, and error states.
+- Logic tier decision: Keep request handling in the `/api` router and business
+	rules in explicit service functions. Validate request data and references
+	before persistence, and convert expected failures to deliberate 4xx responses.
+- Data tier decision: Put required fields, defaults, references, and basic value
+	validation in Mongoose schemas. Keep seed records stable and idempotent with
+	upserts while preserving unrelated data.
+- Activity tracking approach: Validate `userId` and `teamId`, verify both
+	records exist, calculate points from the submitted activity, and persist the
+	activity with its creation timestamp.
+- Team management approach: Validate the team name and mascot, default members
+	to an empty array, preserve submitted members, and return created/listed teams
+	with their member references.
+- Leaderboard approach: Aggregate activity points by team, join team names,
+	sort totals descending, and assign ranks starting at one.
+- Workout suggestions approach: Find the user by email, use the fitness goal
+	and recent activity to choose matching workouts, and attach a reason. Return
+	a 4xx response when no user matches.
 
 ## Test plan
 
-Record the commands you run and what each failure means.
+Run the focused checks in dependency order, then run both builds. A data-tier
+failure indicates a schema, default, reference, or seed-contract problem. An
+API failure indicates service behavior, request validation, response shape, or
+error-status handling. A frontend failure indicates a route rendering,
+API-client, accessibility-state, or user-facing empty/error-state problem. A
+build failure indicates a TypeScript or bundling issue in that tier.
 
 - Data-tier command: `npm run test:data --prefix octofit-tracker/backend`
 - API command: `npm run test:api --prefix octofit-tracker/backend`
